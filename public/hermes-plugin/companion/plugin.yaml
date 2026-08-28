@@ -1,11 +1,12 @@
 name: companion
 label: Hermes Companion
 kind: platform
-version: 1.0.0
+version: 1.1.0
 description: >
-  Phone companion platform. Advertises this gateway on Tailscale, accepts an
-  outbound pair from the Companion app, then relays notifications, chat, and
-  device tools both ways.
+  Phone companion platform. Advertises this gateway on Tailscale. The web PWA
+  pairs via the /companion mailbox; the native Android app pairs as a node
+  (POST /pair + WebSocket /ws/node) and posts notifications to
+  /v1/notifications/incoming. Device tools then RPC over whichever path is live.
 author: Hermes Companion
 optional_env:
   - name: COMPANION_PORT
@@ -23,6 +24,10 @@ optional_env:
   - name: COMPANION_HOME_CHANNEL
     description: "Chat id for cron / unsolicited delivery (default: phone)"
     prompt: "Home channel"
+    password: false
+  - name: COMPANION_BROKER_HOST
+    description: "Host advertised in pair.brokerUrl (default: request Host header)"
+    prompt: "Broker host (optional)"
     password: false
 provides_tools:
   - companion_get_device_state
@@ -46,3 +51,4 @@ provides_tools:
   - companion_swipe
   - companion_type
   - companion_app_usage
+  - companion_node_command

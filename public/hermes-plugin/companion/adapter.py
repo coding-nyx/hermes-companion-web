@@ -2,6 +2,12 @@
 
 Listens on the Tailscale / LAN interface so the phone can discover this
 gateway via MagicDNS and pair outbound. No extra Python dependencies.
+
+Two planes, do not mix:
+
+- Mailbox ``/companion/*`` — web PWA
+- Node broker ``POST /pair`` + ``GET /ws/node`` + ``POST /v1/notifications/incoming``
+  — native Android companion (feat/completion)
 """
 
 from __future__ import annotations
@@ -16,8 +22,16 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from queue import Empty, Queue
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
+from .node_broker import (
+    INCOMING_NOTIFY,
+    TOOL_TO_CAP,
+    accept_websocket,
+    command_node,
+    notification_incoming,
+    pair_payload,
+)
 from gateway.config import Platform, PlatformConfig
 from gateway.platforms.base import (
     BasePlatformAdapter,
@@ -76,9 +90,13 @@ def _json(handler: BaseHTTPRequestHandler, code: int, body: Any) -> None:
 
 def _read(handler: BaseHTTPRequestHandler) -> dict[str, Any]:
     length = int(handler.headers.get("Content-Length") or "0")
-    raw = handler.rfile.read(length) if length else b"{}"
+    raw = handler.rfile.read(length) if length else b""
+    ctype = (handler.headers.get("Content-Type") or "").lower()
+    if "application/x-www-form-urlencoded" in ctype:
+        parsed = parse_qs(raw.decode("utf-8") if raw else "", keep_blank_values=True)
+        return {k: (v[0] if v else "") for k, v in parsed.items()}
     try:
-        data = json.loads(raw.decode("utf-8") or "{}")
+        data = json.loads((raw or b"{}").decode("utf-8") or "{}")
         return data if isinstance(data, dict) else {}
     except Exception:
         return {}
@@ -99,8 +117,13 @@ class Handler(BaseHTTPRequestHandler):
         _json(self, 204, {"ok": True})
 
     def do_GET(self) -> None:  # noqa: N802
-        path = urlparse(self.path).path.rstrip("/")
-        if path in ("/companion/hello", "/companion"):
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        upgrade = (self.headers.get("Upgrade") or "").lower()
+        if path in ("/ws/node", "/companion/ws/node") and "websocket" in upgrade:
+            accept_websocket(self)
+            return
+        if path in ("/companion/hello", "/companion", "/"):
             ips, magic = STATE["ips"], STATE["magic"]
             _json(
                 self,
@@ -109,13 +132,21 @@ class Handler(BaseHTTPRequestHandler):
                     "ok": True,
                     "name": "companion",
                     "label": STATE["host"],
-                    "version": "1.0.0",
+                    "version": "1.1.0",
                     "port": PORT,
                     "magicDns": magic,
                     "tailscaleIps": ips,
                     "pairing": True,
+                    "pair": "/pair",
+                    "broker": "/ws/node",
+                    "mailbox": "/companion",
+                    "notifications": "/v1/notifications/incoming",
                 },
             )
+            return
+        if path == "/admin/setup-code":
+            code = LOCK_CODE or "(any code from the phone is accepted)"
+            _json(self, 200, {"ok": True, "setupCode": code})
             return
         if path == "/companion/outbox":
             tok = _token(self)
@@ -137,7 +168,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path.rstrip("/")
         body = _read(self)
-        if path == "/companion/pair":
+        if path in ("/companion/pair", "/pair"):
+            # Native Android uses POST /pair (setupCode, publicKey, requestedCaps).
+            # The web companion uses POST /companion/pair (code, device).
+            if path == "/pair" or "setupCode" in body or "requestedCaps" in body:
+                code, payload = pair_payload(body, self.headers.get("Host") or "")
+                _json(self, code, payload)
+                return
             code = str(body.get("code") or "").strip().upper()
             if LOCK_CODE and code != LOCK_CODE.upper():
                 _json(self, 403, {"ok": False, "error": "bad pairing code"})
@@ -171,6 +208,10 @@ class Handler(BaseHTTPRequestHandler):
                     RPC_WAIT[msg["id"]].put(msg)
             _json(self, 200, {"ok": True})
             return
+        if path == "/v1/notifications/incoming":
+            result = notification_incoming({str(k): str(v) for k, v in body.items()})
+            _json(self, 202, result)
+            return
         _json(self, 404, {"ok": False})
 
 
@@ -191,6 +232,13 @@ def start_server() -> None:
 
 
 def rpc(name: str, args: dict[str, Any], timeout: float = 45.0) -> str:
+    from .node_broker import _live_node
+
+    rec = _live_node()
+    if rec and rec.get("ws") is not None:
+        cap = name if "." in name else TOOL_TO_CAP.get(name)
+        if cap:
+            return command_node(cap, args or {}, timeout)
     if not SESSIONS:
         return json.dumps({"ok": False, "error": "no paired companion"})
     tok = next(iter(SESSIONS))
@@ -239,9 +287,15 @@ class CompanionAdapter(BasePlatformAdapter):
 
     def _drain(self) -> None:
         while not self._stop.is_set():
+            msg = None
             try:
-                msg = INBOX.get(timeout=0.5)
+                msg = INBOX.get(timeout=0.25)
             except Empty:
+                try:
+                    msg = INCOMING_NOTIFY.get(timeout=0.25)
+                except Empty:
+                    continue
+            if not msg:
                 continue
             kind = msg.get("type")
             tok = msg.get("_session") or ""
@@ -307,10 +361,10 @@ def register(ctx):
         max_message_length=8000,
         platform_hint=(
             "You are chatting through the Hermes Companion on the user's phone. "
-            "Use companion_* tools to read notifications, change device settings, "
-            "act on the device, and — on the native Android companion — read the "
-            "accessibility tree, tap/swipe/type (if screen input is granted), and "
-            "read app usage. Confirm irreversible actions."
+            "Use companion_* tools for the web companion mailbox, and "
+            "companion_node_command (or capability families like device.status, "
+            "notifications.read, screen.input) when the native Android node is paired. "
+            "Confirm irreversible actions."
         ),
         emoji="Mobile Phone",
     )

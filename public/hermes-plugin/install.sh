@@ -18,7 +18,7 @@ DEST="${HOME}/.hermes/plugins/platforms/companion"
 mkdir -p "$DEST"
 
 echo "Installing Hermes Companion plugin → $DEST"
-for f in plugin.yaml __init__.py adapter.py tools.py; do
+for f in plugin.yaml __init__.py adapter.py tools.py node_broker.py; do
   echo "  $f"
   curl -fsSL "$BASE/companion/$f" -o "$DEST/$f"
 done
@@ -28,5 +28,6 @@ echo "Installed. On the Hermes machine run:"
 echo "  hermes plugins enable companion"
 echo "  hermes gateway"
 echo
-echo "Then scan this tailnet from the Companion app and pair with the on-screen code."
+echo "Web companion: scan this tailnet and pair with the on-screen code (mailbox /companion/*)."
+echo "Android companion: Node tab → Pair as node → http://<magicdns>:8642 + the setup code."
 echo "The plugin listens on port 8642 (override with COMPANION_PORT) on all interfaces so Tailscale MagicDNS can find it."

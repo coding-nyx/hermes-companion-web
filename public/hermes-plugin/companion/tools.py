@@ -1,4 +1,9 @@
-"""Device tools that RPC to the paired companion phone."""
+"""Device tools that RPC to the paired companion phone.
+
+``companion_*`` names hit the web mailbox when that is the live pair, and the
+Android node broker (capability families) when a native node is connected.
+``companion_node_command`` is the explicit node-broker path.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +29,15 @@ def _call(name: str, args: dict[str, Any] | None = None, **kwargs: Any) -> str:
     return rpc(name, args or {})
 
 
+def _node(args: dict[str, Any] | None = None, **kwargs: Any) -> str:
+    payload = args or {}
+    cap = str(payload.get("capability") or "")
+    params = payload.get("params") if isinstance(payload.get("params"), dict) else {
+        k: v for k, v in payload.items() if k != "capability"
+    }
+    return rpc(cap, params)
+
+
 TOOL_SPECS = [
     (
         "companion_get_device_state",
@@ -34,7 +48,7 @@ TOOL_SPECS = [
         "companion_set_device",
         _schema(
             "companion_set_device",
-            "Change phone settings. Only include fields you want to change.",
+            "Change phone settings. Only include fields you want to change. Web companion only.",
             {
                 "brightness": {"type": "number"},
                 "volume": {"type": "number"},
@@ -186,5 +200,22 @@ TOOL_SPECS = [
             {},
         ),
         lambda args, **kw: _call("app_usage", args),
+    ),
+    (
+        "companion_node_command",
+        _schema(
+            "companion_node_command",
+            "Invoke a native Android node capability family over the broker "
+            "(device.status, notifications.read, screen.input, apps.launch, …).",
+            {
+                "capability": {
+                    "type": "string",
+                    "description": "NodeCapability.family, e.g. device.status",
+                },
+                "params": {"type": "object", "additionalProperties": True},
+            },
+            ["capability"],
+        ),
+        _node,
     ),
 ]

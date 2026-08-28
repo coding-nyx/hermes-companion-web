@@ -38,13 +38,16 @@ Or copy `public/hermes-plugin/companion/` to `~/.hermes/plugins/platforms/compan
 | `COMPANION_BIND` | `0.0.0.0` | Bind (Tailscale needs this) |
 | `COMPANION_PAIRING` | — | Lock pairing to this code |
 | `COMPANION_HOME_CHANNEL` | `phone` | Chat id for unsolicited delivery |
+| `COMPANION_BROKER_HOST` | request Host | Advertised `brokerUrl` for the Android node |
 
-After pair:
+Two pairing planes (do not mix with Hermes chat HTTP/SSE):
 
-| Direction | Endpoint |
-| --- | --- |
-| Phone → Hermes | `POST /companion/inbox` |
-| Hermes → phone | `GET /companion/outbox` (long-poll) |
+| Client | Pair | Talk |
+| --- | --- | --- |
+| This PWA | `POST /companion/pair` | mailbox `/companion/inbox` + `/companion/outbox` |
+| Native Android (`feat/completion`) | `POST /pair` | `WS /ws/node` + `POST /v1/notifications/incoming` |
+
+On the Android app: **Node → Pair as node** with `http://<magicdns>:8642` and the setup code. Chat with Hermes still uses the Hermes gateway; the plugin is the device node.
 
 ## Develop
 
