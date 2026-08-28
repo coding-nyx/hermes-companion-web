@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { Caduceus } from "@/components/mark";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,9 @@ import { discoverGateways } from "@/lib/hermes/discovery";
 import { connectPeer } from "@/lib/hermes/gateway-client";
 import type { GatewayPeer } from "@/lib/hermes/protocol";
 import { useHermesStore } from "@/lib/hermes/store";
+
+const PLUGIN_INSTALL =
+  "curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash";
 
 type Step = "install" | "discover" | "pair";
 
@@ -22,7 +25,6 @@ export function PairingScreen() {
   const [phase, setPhase] = useState<"idle" | "linking">("idle");
   const [codeReady, setCodeReady] = useState(false);
   const [step, setStep] = useState<Step>(pluginAck ? "discover" : "install");
-  const [origin, setOrigin] = useState("");
   const [copied, setCopied] = useState(false);
   const [extraHost, setExtraHost] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -33,13 +35,9 @@ export function PairingScreen() {
   useEffect(() => {
     if (pairing === "------") rotateCode();
     setCodeReady(true);
-    setOrigin(window.location.origin);
   }, [pairing, rotateCode]);
 
-  const installCmd = useMemo(() => {
-    const o = origin || "https://YOUR_COMPANION";
-    return `curl -fsSL ${o}/hermes-plugin/install.sh | bash -s -- ${o}`;
-  }, [origin]);
+  const installCmd = PLUGIN_INSTALL;
 
   async function scan() {
     setScanning(true);
@@ -140,7 +138,9 @@ export function PairingScreen() {
                   {copied ? "Copied" : "Copy"}
                 </Button>
                 <a
-                  href="/hermes-plugin/README.md"
+                  href="https://github.com/coding-nyx/hermes-companion-plugin"
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-flex h-9 items-center rounded-lg px-3 text-xs text-muted shadow-[var(--shadow-border)] hover:text-foreground"
                 >
                   Plugin readme

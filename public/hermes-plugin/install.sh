@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ORIGIN="${1:-${HERMES_COMPANION_ORIGIN:-}}"
-if [ -z "$ORIGIN" ]; then
-  echo "Usage: curl -fsSL <companion-origin>/hermes-plugin/install.sh | bash -s -- <companion-origin>"
-  echo "Example origin: https://your-companion-host"
-  exit 1
+# Usage:
+#   curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash
+#   bash install.sh
+#   bash install.sh https://your-companion-host   # fetch from a running companion app
+
+ORIGIN="${1:-}"
+if [ -n "$ORIGIN" ]; then
+  ORIGIN="${ORIGIN%/}"
+  BASE="${ORIGIN}/hermes-plugin"
+else
+  BASE="https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main"
 fi
 
-ORIGIN="${ORIGIN%/}"
 DEST="${HOME}/.hermes/plugins/platforms/companion"
 mkdir -p "$DEST"
 
 echo "Installing Hermes Companion plugin → $DEST"
 for f in plugin.yaml __init__.py adapter.py tools.py; do
   echo "  $f"
-  curl -fsSL "$ORIGIN/hermes-plugin/companion/$f" -o "$DEST/$f"
+  curl -fsSL "$BASE/companion/$f" -o "$DEST/$f"
 done
 
 echo

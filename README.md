@@ -2,7 +2,13 @@
 
 Mobile-first web companion for the [Hermes agent](https://hermes-agent.nousresearch.com/). Pair a phone (or any browser) to a Hermes gateway, chat with tool-calling, control the device, and forward notifications and system updates back to Hermes.
 
-Native Android companion lives at [coding-nyx/hermes-companion](https://github.com/coding-nyx/hermes-companion). This repo is the web + plugin counterpart.
+## Repos
+
+| Repo | What |
+| --- | --- |
+| [coding-nyx/hermes-companion-web](https://github.com/coding-nyx/hermes-companion-web) | This PWA |
+| [coding-nyx/hermes-companion-plugin](https://github.com/coding-nyx/hermes-companion-plugin) | Hermes gateway platform plugin |
+| [coding-nyx/hermes-companion](https://github.com/coding-nyx/hermes-companion) | Native Android companion |
 
 ## What it does
 
@@ -19,7 +25,7 @@ The phone talks **out** over Tailscale. The plugin never needs a public inbound 
 On the machine that runs Hermes:
 
 ```bash
-curl -fsSL "$COMPANION_ORIGIN/hermes-plugin/install.sh" | bash -s -- "$COMPANION_ORIGIN"
+curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash
 hermes plugins enable companion
 hermes gateway
 ```

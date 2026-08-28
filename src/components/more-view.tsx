@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { SectionLabel } from "@/components/section-label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { disconnectLink, reconnectFromStore } from "@/lib/hermes/gateway-client";
 import { useHermesStore } from "@/lib/hermes/store";
 import { relativeTime } from "@/lib/utils";
+
+const PLUGIN_INSTALL =
+  "curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash";
 
 export function MoreView() {
   const device = useHermesStore((s) => s.device);
@@ -39,10 +42,7 @@ export function MoreView() {
   const [copied, setCopied] = useState(false);
 
   const kindLabel = connectionKind === "plugin" ? "Hermes plugin" : "On-device runtime";
-  const installCmd = useMemo(() => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return origin ? `curl -fsSL ${origin}/hermes-plugin/install.sh | bash -s -- ${origin}` : "";
-  }, []);
+  const installCmd = PLUGIN_INSTALL;
 
   async function reconnect() {
     setReconnecting(true);
@@ -136,7 +136,9 @@ export function MoreView() {
               {copied ? "Copied" : "Copy install"}
             </Button>
             <a
-              href="/hermes-plugin/README.md"
+              href="https://github.com/coding-nyx/hermes-companion-plugin"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex h-8 items-center rounded-lg px-3 text-xs text-muted shadow-[var(--shadow-border)] hover:text-foreground"
             >
               Plugin readme

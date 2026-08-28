@@ -1,5 +1,7 @@
 # Hermes Companion plugin
 
+Canonical source: [coding-nyx/hermes-companion-plugin](https://github.com/coding-nyx/hermes-companion-plugin).
+
 Platform adapter for [Hermes Agent](https://hermes-agent.nousresearch.com/). The phone connects **out** over Tailscale; this process never needs inbound ports on the public internet.
 
 ## Install
@@ -7,7 +9,7 @@ Platform adapter for [Hermes Agent](https://hermes-agent.nousresearch.com/). The
 On the machine that runs Hermes:
 
 ```bash
-curl -fsSL "$COMPANION_ORIGIN/hermes-plugin/install.sh" | bash -s -- "$COMPANION_ORIGIN"
+curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash
 hermes plugins enable companion
 hermes gateway
 ```
