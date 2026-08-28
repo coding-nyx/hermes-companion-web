@@ -47,3 +47,5 @@ The phone is outbound-only. No public inbound ports.
 ## Tools
 
 Hermes can `companion_set_device`, read the shade, open apps, speak, vibrate, and — with on-device approval — place calls, send SMS, or capture a screenshot.
+
+On the native Android companion, Hermes can also `companion_read_screen`, `companion_tap`, `companion_swipe`, `companion_type`, and `companion_app_usage` once Accessibility + usage access are granted and screen input is allowed.

@@ -108,6 +108,24 @@ export function DeviceView() {
       </section>
 
       <section>
+        <SectionLabel>Screen use</SectionLabel>
+        <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-border)]">
+          <p className="text-sm leading-relaxed text-muted">
+            Reading the live UI tree, tapping, swiping, typing, and real app-usage stats need the native Android companion
+            with Accessibility and usage access on. This web app can still control in-app device state.
+          </p>
+          <a
+            href="https://github.com/coding-nyx/hermes-companion"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex h-8 items-center rounded-lg px-3 text-xs text-muted shadow-[var(--shadow-border)] hover:text-foreground"
+          >
+            Android node
+          </a>
+        </div>
+      </section>
+
+      <section>
         <SectionLabel>System keys</SectionLabel>
         <div className="grid grid-cols-3 gap-2">
           {(["back", "home", "recents"] as const).map((key) => (

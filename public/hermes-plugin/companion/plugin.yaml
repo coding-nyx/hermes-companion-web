@@ -41,3 +41,8 @@ provides_tools:
   - companion_send_sms
   - companion_capture_screenshot
   - companion_post_notification
+  - companion_read_screen
+  - companion_tap
+  - companion_swipe
+  - companion_type
+  - companion_app_usage

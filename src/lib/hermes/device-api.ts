@@ -305,6 +305,17 @@ export async function executeTool(
       return { ok: true, result: desc };
     }
 
+    case "read_screen":
+    case "tap":
+    case "swipe":
+    case "type":
+    case "app_usage":
+      return {
+        ok: false,
+        result:
+          "Screen use (accessibility tree, tap/swipe/type, app usage) runs on the native Android companion after Accessibility and usage access are granted. This web companion cannot host those services.",
+      };
+
     default:
       return { ok: false, result: `Unknown tool: ${name}` };
   }

@@ -308,7 +308,9 @@ def register(ctx):
         platform_hint=(
             "You are chatting through the Hermes Companion on the user's phone. "
             "Use companion_* tools to read notifications, change device settings, "
-            "and act on the device. Confirm irreversible actions."
+            "act on the device, and — on the native Android companion — read the "
+            "accessibility tree, tap/swipe/type (if screen input is granted), and "
+            "read app usage. Confirm irreversible actions."
         ),
         emoji="Mobile Phone",
     )

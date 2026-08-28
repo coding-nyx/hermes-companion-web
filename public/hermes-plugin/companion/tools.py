@@ -135,4 +135,56 @@ TOOL_SPECS = [
         ),
         lambda args, **kw: _call("post_notification", args),
     ),
+    (
+        "companion_read_screen",
+        _schema(
+            "companion_read_screen",
+            "Read the Android accessibility tree of the current screen (labels, bounds, clickable nodes).",
+            {"includeSystem": {"type": "boolean"}},
+        ),
+        lambda args, **kw: _call("read_screen", args),
+    ),
+    (
+        "companion_tap",
+        _schema(
+            "companion_tap",
+            "Tap a node by visible text, or by x,y screen pixels. Requires the user to allow screen input.",
+            {"text": {"type": "string"}, "x": {"type": "number"}, "y": {"type": "number"}},
+        ),
+        lambda args, **kw: _call("tap", args),
+    ),
+    (
+        "companion_swipe",
+        _schema(
+            "companion_swipe",
+            "Swipe between two screen points. Requires screen input.",
+            {
+                "x1": {"type": "number"},
+                "y1": {"type": "number"},
+                "x2": {"type": "number"},
+                "y2": {"type": "number"},
+            },
+            ["x1", "y1", "x2", "y2"],
+        ),
+        lambda args, **kw: _call("swipe", args),
+    ),
+    (
+        "companion_type",
+        _schema(
+            "companion_type",
+            "Type into the focused field via accessibility. Requires screen input.",
+            {"text": {"type": "string"}},
+            ["text"],
+        ),
+        lambda args, **kw: _call("type", args),
+    ),
+    (
+        "companion_app_usage",
+        _schema(
+            "companion_app_usage",
+            "Foreground app and recent screen-on usage from Android usage stats.",
+            {},
+        ),
+        lambda args, **kw: _call("app_usage", args),
+    ),
 ]

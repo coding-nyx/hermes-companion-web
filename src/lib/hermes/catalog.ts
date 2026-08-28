@@ -334,12 +334,81 @@ export const HERMES_TOOLS = [
       parameters: { type: "object", properties: {}, additionalProperties: false },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "read_screen",
+      description:
+        "Read the Android accessibility tree of the current screen (labels, bounds, clickable nodes). Native companion only.",
+      parameters: {
+        type: "object",
+        properties: { includeSystem: { type: "boolean" } },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "tap",
+      description: "Tap a node by visible text or by x,y screen pixels. Requires native companion + screen-input grant.",
+      parameters: {
+        type: "object",
+        properties: {
+          text: { type: "string" },
+          x: { type: "number" },
+          y: { type: "number" },
+        },
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "swipe",
+      description: "Swipe between two screen points. Native companion + screen-input grant.",
+      parameters: {
+        type: "object",
+        properties: {
+          x1: { type: "number" },
+          y1: { type: "number" },
+          x2: { type: "number" },
+          y2: { type: "number" },
+        },
+        required: ["x1", "y1", "x2", "y2"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "type",
+      description: "Type into the focused field via accessibility. Native companion + screen-input grant.",
+      parameters: {
+        type: "object",
+        properties: { text: { type: "string" } },
+        required: ["text"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "app_usage",
+      description: "Foreground app and recent screen-on usage. Native companion with usage-access grant.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
 ];
 
 export const SYSTEM_PROMPT = `You are Hermes, the user's personal agent, speaking through the Hermes Companion on their phone.
 You already have a live paired connection to this device. Do not ask them to pair or install anything.
 
 You can read the notification shade, change device settings, launch apps, speak, vibrate, control media, and (with approval) call, text, or screenshot.
+On the native Android companion, you can also read the accessibility tree, tap/swipe/type (only if the user enabled screen input), and read app usage.
 Be concise and calm. Prefer doing over describing. Confirm only irreversible or sensitive actions.
 When the user relays a notification, treat it as something they want handled — summarize, suggest, or act.
 If you change the device, say what you changed in one short line after the tool result.

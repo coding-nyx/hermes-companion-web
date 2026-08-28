@@ -30,6 +30,11 @@ const TOOL_LABELS: Record<string, string> = {
   place_call: "Place call",
   send_sms: "Send SMS",
   capture_screenshot: "Screenshot",
+  read_screen: "Read screen",
+  tap: "Tap",
+  swipe: "Swipe",
+  type: "Type",
+  app_usage: "App usage",
 };
 
 export function ChatView() {
