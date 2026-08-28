@@ -1,0 +1,43 @@
+name: companion
+label: Hermes Companion
+kind: platform
+version: 1.0.0
+description: >
+  Phone companion platform. Advertises this gateway on Tailscale, accepts an
+  outbound pair from the Companion app, then relays notifications, chat, and
+  device tools both ways.
+author: Hermes Companion
+optional_env:
+  - name: COMPANION_PORT
+    description: "HTTP listen port (default: 8642)"
+    prompt: "Companion port"
+    password: false
+  - name: COMPANION_BIND
+    description: "Bind address (default: 0.0.0.0 — required for Tailscale)"
+    prompt: "Bind address"
+    password: false
+  - name: COMPANION_PAIRING
+    description: "Lock pairing to this code (otherwise the phone's code is accepted)"
+    prompt: "Pairing code (optional)"
+    password: false
+  - name: COMPANION_HOME_CHANNEL
+    description: "Chat id for cron / unsolicited delivery (default: phone)"
+    prompt: "Home channel"
+    password: false
+provides_tools:
+  - companion_get_device_state
+  - companion_set_device
+  - companion_read_notifications
+  - companion_dismiss_notification
+  - companion_open_app
+  - companion_press_key
+  - companion_clipboard_read
+  - companion_clipboard_write
+  - companion_speak
+  - companion_vibrate
+  - companion_media_control
+  - companion_get_location
+  - companion_place_call
+  - companion_send_sms
+  - companion_capture_screenshot
+  - companion_post_notification

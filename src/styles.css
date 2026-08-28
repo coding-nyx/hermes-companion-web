@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #080807;
+  --color-background: #0b0b0a;
+  --color-foreground: #f2f0ea;
+  --color-fg: #f2f0ea;
+  --color-surface: #141413;
+  --color-elevated: #1c1c1a;
+  --color-muted: #9c9890;
+  --color-subtle: #6e6b64;
+  --color-primary: #e8e4d8;
+  --color-primary-foreground: #0b0b0a;
+  --color-secondary: #1c1c1a;
+  --color-secondary-foreground: #f2f0ea;
+  --color-border: color-mix(in oklab, var(--color-foreground) 12%, transparent);
+  --color-ring: color-mix(in oklab, var(--color-foreground) 40%, transparent);
+  --color-ok: #8aa37f;
+  --color-warn: #c4a574;
+  --color-danger: #c47a6a;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --text-2xs: 0.625rem;
+}
+
+:root {
+  color-scheme: dark;
+  --shadow-border: inset 0 0 0 1px color-mix(in oklab, var(--color-foreground) 12%, transparent);
+  --shadow-border-hover: inset 0 0 0 1px color-mix(in oklab, var(--color-foreground) 24%, transparent);
+  --motion-stagger: 40ms;
+  --motion-micro: 80ms;
+  --motion-quick: 150ms;
+  --motion-fast: 250ms;
+  --motion-slow: 400ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+.stagger-in > * {
+  animation: rise-in var(--motion-slow) var(--ease-smooth-out) forwards;
+}
+
+.stagger-in > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-in > *:nth-child(2) {
+  animation-delay: 80ms;
+}
+.stagger-in > *:nth-child(3) {
+  animation-delay: 140ms;
+}
+.stagger-in > *:nth-child(4) {
+  animation-delay: 200ms;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-muted) 55%, transparent) 0%,
+    var(--color-foreground) 50%,
+    color-mix(in oklab, var(--color-muted) 55%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.night-wash {
+  background: color-mix(in oklab, #c4a070 22%, transparent);
+}
+
+.flash-wash {
+  background: radial-gradient(
+    ellipse at 50% -10%,
+    rgb(255 248 230 / 0.2),
+    transparent 62%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-in > * {
+    animation: none;
+  }
+  .shimmer {
+    animation: none;
+    color: var(--color-muted);
+    background: none;
+  }
+}
