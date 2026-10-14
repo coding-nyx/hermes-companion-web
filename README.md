@@ -1,69 +1,63 @@
-# Hermes Companion (web)
+<p align="center">
+  <img src="docs/assets/readme-overview.svg" alt="Companion Web — A browser interface for a self-hosted agent." width="100%" />
+</p>
 
-Mobile-first web companion for the [Hermes agent](https://hermes-agent.nousresearch.com/). Pair a phone (or any browser) to a Hermes gateway, chat with tool-calling, control the device, and forward notifications and system updates back to Hermes.
+# Companion Web
 
-## Repos
+A mobile-first web companion for [Hermes Agent](https://hermes-agent.nousresearch.com/), built with React 19, TanStack Start, Tailwind and Zustand. It combines pairing, chat, a notification shade, device controls and action review in a browser interface.
 
-| Repo | What |
-| --- | --- |
-| [coding-nyx/hermes-companion-web](https://github.com/coding-nyx/hermes-companion-web) | This PWA |
-| [coding-nyx/hermes-companion-plugin](https://github.com/coding-nyx/hermes-companion-plugin) | Hermes gateway platform plugin |
-| [coding-nyx/hermes-companion](https://github.com/coding-nyx/hermes-companion) | Native Android companion |
+[Features](#features-and-limits) · [Develop](#development) · [Host plugin](#connect-a-host) · [Checks](#checks)
 
-## What it does
+## Features and limits
 
-- **Pairing** — 6-character code, LAN / Tailscale discovery, or on-device loopback if no gateway is reachable
-- **Chat** — sessions with tool chips, xAI when configured, local fallback so the demo still works offline
-- **Device** — brightness, DND, night light, flashlight, volume, media, app grid, system keys; Battery Status API when the browser exposes it
-- **Notify** — live shade, auto-forward queued alerts to Hermes, charging / battery-low system updates
-- **Approvals** — Hermes-requested sensitive actions (call, SMS, screenshot) surface an in-app card
+| Surface       | What to expect                                                                         |
+| ------------- | -------------------------------------------------------------------------------------- |
+| Pairing       | Six-character code and LAN/private-network discovery                                   |
+| Chat          | Sessions and tool chips; configured provider requests or a local fallback              |
+| Device        | UI state plus available browser APIs; native control requires a compatible paired node |
+| Notifications | In-app shade and forwarding over the companion mailbox                                 |
+| Review        | In-app approval cards for supported sensitive actions                                  |
 
-## Plugin (Hermes host)
+Browser device state includes demo/virtual values. Changing a control in the UI does not prove that Android system settings, calls, SMS or a real notification listener changed. Browser support and permission grants vary. Pairing, sessions and shade state are persisted by the client store; this app is not Tally's server-only finance model.
 
-The phone talks **out** over Tailscale. The plugin never needs a public inbound port.
+## Development
 
-On the machine that runs Hermes:
+Use Node 22 and npm with the committed lockfile:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/coding-nyx/hermes-companion-plugin/main/install.sh | bash
-hermes plugins enable companion
-hermes gateway
-```
-
-Or copy `public/hermes-plugin/companion/` to `~/.hermes/plugins/platforms/companion/`.
-
-| Env | Default | Purpose |
-| --- | --- | --- |
-| `COMPANION_PORT` | `8642` | Listen port |
-| `COMPANION_BIND` | `0.0.0.0` | Bind (Tailscale needs this) |
-| `COMPANION_PAIRING` | — | Lock pairing to this code |
-| `COMPANION_HOME_CHANNEL` | `phone` | Chat id for unsolicited delivery |
-| `COMPANION_BROKER_HOST` | request Host | Advertised `brokerUrl` for the Android node |
-
-Two pairing planes (do not mix with Hermes chat HTTP/SSE):
-
-| Client | Pair | Talk |
-| --- | --- | --- |
-| This PWA | `POST /companion/pair` | mailbox `/companion/inbox` + `/companion/outbox` |
-| Native Android (`feat/completion`) | `POST /pair` | `WS /ws/node` + `POST /v1/notifications/incoming` |
-
-On the Android app: **Node → Pair as node** with `http://<magicdns>:8642` and the setup code. Chat with Hermes still uses the Hermes gateway; the plugin is the device node.
-
-## Develop
-
-```bash
-npm install
+```sh
+git clone https://github.com/coding-nyx/hermes-companion-web.git
+cd hermes-companion-web
+npm ci
 npm run dev
 ```
 
-Typecheck: `npm run typecheck`.
+The development script binds `0.0.0.0:8080`; select the intended development network before running it. The repository contains platform auth/database scaffolding. Configure the intended environment rather than assuming every hosted deployment runs without auth or storage.
 
-Set `XAI_API_KEY` (or the app env the Vite plugin injects) if you want live model replies. Without it, the local tool fallback still answers.
+The optional `XAI_API_KEY` belongs only in a protected server environment. Without provider configuration, local fallback responses are not live model results. Never place server credentials in `VITE_*` variables or browser storage.
 
-## Stack
+## Connect a host
 
-TanStack Start, React 19, Zustand (persisted pairing / sessions / shade / device), Tailwind 4, Zod.
+Use the separate [Companion platform plugin](https://github.com/coding-nyx/hermes-companion-plugin). It provides `/companion/pair`, `/companion/inbox` and `/companion/outbox`, normally on port **8642**. Read its installation and private-listener configuration before changing a Hermes host.
 
-## License
+The [current Android app](https://github.com/coding-nyx/hermes-companion-app) uses a different bundled relay, normally port **9120**. Its pairing protocol is not interchangeable with this web mailbox. The [older Android prototype](https://github.com/coding-nyx/hermes-companion) is archived.
 
-Same as you choose for the rest of the Hermes companion work. No license file is attached yet.
+## Checks
+
+```sh
+npm run typecheck
+npm test
+npm run lint
+npm run build:dev
+```
+
+`npm run build` also invokes `db:migrate`; it can perform database work when configured. Review the migration environment before using the production build command. A UI demo or local fallback is not certification of a live Hermes host or phone-control integration.
+
+## Source map
+
+- `src/components/`: chat, device and companion views.
+- `src/lib/hermes/`: client store, device actions and companion contracts.
+- `public/hermes-plugin/`: bundled plugin copy; the separate plugin repository is the host-source reference.
+- `server/`, `src/lib/auth/`, `migrations/`: platform server/auth/database support.
+- `scripts/`: environment, build and browser-check helpers.
+
+No top-level license file is present. The existing platform shell and branding remain part of the project.
